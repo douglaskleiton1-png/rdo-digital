@@ -113,7 +113,7 @@
 <div class="max-w-7xl mx-auto px-4 pb-12">
   <div class="space-y-6">
 
-    <!-- Seção Mão de Obra -->
+    <!-- Mão de Obra -->
     <div class="card-shadow bg-white rounded-xl overflow-hidden">
       <div class="bg-blue-600 px-6 py-4 text-white">
         <h2 class="text-lg font-bold">👷 Mão de Obra</h2>
@@ -135,10 +135,10 @@
       </div>
     </div>
 
-    <!-- Seção Paralisações -->
+    <!-- Paralisações -->
     <div class="card-shadow bg-white rounded-xl overflow-hidden border-2 border-red-50">
       <div class="bg-red-600 px-6 py-4 text-white">
-        <h2 class="text-lg font-bold">⚠️ Paralisações</h2>
+        <h2 class="text-lg font-bold">⚠️ Paralisações e Impactos</h2>
       </div>
       <div class="p-4 overflow-x-auto">
         <table class="w-full text-left min-w-[800px]">
@@ -153,6 +153,29 @@
             </tr>
           </thead>
           <tbody id="tbodyIMP"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Atividades Executadas -->
+    <div class="card-shadow bg-white rounded-xl overflow-hidden border-2 border-green-50">
+      <div class="bg-green-600 px-6 py-4 text-white flex justify-between items-center">
+        <h2 class="text-lg font-bold">✅ Atividades Executadas</h2>
+        <button onclick="addAtividade()" class="bg-white text-green-700 px-4 py-1 rounded-lg text-sm font-bold hover:bg-green-50 transition">+ Adicionar</button>
+      </div>
+      <div class="p-4 overflow-x-auto">
+        <table class="w-full text-left min-w-[600px]">
+          <thead>
+            <tr class="border-b-2 border-green-50">
+              <th class="py-3 px-2 text-[11px] font-bold uppercase text-green-700">Atividade / Serviço</th>
+              <th class="py-3 px-2 text-[11px] font-bold uppercase text-green-700 text-center">Unidade</th>
+              <th class="py-3 px-2 text-[11px] font-bold uppercase text-green-700 text-center">Qtd. Prevista</th>
+              <th class="py-3 px-2 text-[11px] font-bold uppercase text-green-700 text-center">Qtd. Executada</th>
+              <th class="py-3 px-2 text-[11px] font-bold uppercase text-green-700 text-center">%</th>
+              <th class="py-3 px-2 text-[11px] font-bold uppercase text-gray-400 text-center">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyAtiv"></tbody>
         </table>
       </div>
     </div>
@@ -184,7 +207,7 @@
 
     <!-- Assinaturas -->
     <div class="card-shadow bg-white rounded-xl p-6">
-      <h3 class="font-bold text-gray-800 mb-6">✍️ Assinaturas</h3>
+      <h3 class="font-bold text-gray-800 mb-6">✍️ Assinaturas Digitais</h3>
       <div class="grid md:grid-cols-2 gap-8">
         <div class="sig-box">
           <p class="font-bold text-gray-700 mb-4 text-center">Contratada</p>
@@ -203,7 +226,6 @@
 </div>
 
 <script>
-  // Dados de Exemplo
   const maoDeObra = [
     { f: "Pedreiro", p: 10, r: 10, hn: 10, he50: 2, he100: 0 },
     { f: "Eletricista", p: 4, r: 3, hn: 3, he50: 0, he100: 0 }
@@ -212,6 +234,55 @@
   const impactos = [
     { a: "Equipe Civil", m: "Chuva intensa", t: 3, hn: 3, he50: 0, he100: 0 }
   ];
+
+  let atividades = [
+    { s: "Concretagem de laje", u: "m³", qp: 50, qe: 30 },
+    { s: "Alvenaria de vedação", u: "m²", qp: 120, qe: 80 },
+    { s: "Instalação elétrica - 1º pavimento", u: "ponto", qp: 40, qe: 40 }
+  ];
+
+  function renderAtividades() {
+    const body = document.getElementById('tbodyAtiv');
+    body.innerHTML = atividades.map((a, idx) => {
+      const pct = a.qp > 0 ? Math.min(100, Math.round((a.qe / a.qp) * 100)) : 0;
+      const cor = pct >= 100 ? 'bg-green-500' : pct >= 50 ? 'bg-blue-500' : 'bg-yellow-400';
+      return `
+        <tr class="border-b border-gray-50 text-sm">
+          <td class="py-3 px-2 font-semibold text-gray-700">
+            <input type="text" value="${a.s}" onchange="atividades[${idx}].s=this.value" class="w-full border-b border-transparent hover:border-gray-300 focus:border-blue-400 focus:outline-none bg-transparent">
+          </td>
+          <td class="py-3 px-2 text-center">
+            <input type="text" value="${a.u}" onchange="atividades[${idx}].u=this.value" class="w-16 border rounded p-1 text-center text-xs">
+          </td>
+          <td class="py-3 px-2 text-center">
+            <input type="number" value="${a.qp}" onchange="atividades[${idx}].qp=parseFloat(this.value)||0;renderAtividades()" class="w-20 border rounded p-1 text-center">
+          </td>
+          <td class="py-3 px-2 text-center">
+            <input type="number" value="${a.qe}" onchange="atividades[${idx}].qe=parseFloat(this.value)||0;renderAtividades()" class="w-20 border rounded p-1 text-center">
+          </td>
+          <td class="py-3 px-2 text-center" style="min-width:100px">
+            <div class="flex items-center gap-2">
+              <div class="progress-bar flex-1"><div class="${cor}" style="height:100%;width:${pct}%;border-radius:999px"></div></div>
+              <span class="text-xs font-bold text-gray-600">${pct}%</span>
+            </div>
+          </td>
+          <td class="py-3 px-2 text-center">
+            <button onclick="removeAtividade(${idx})" class="text-red-400 hover:text-red-600 font-bold text-lg leading-none">×</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function addAtividade() {
+    atividades.push({ s: "Nova atividade", u: "un", qp: 0, qe: 0 });
+    renderAtividades();
+  }
+
+  function removeAtividade(idx) {
+    atividades.splice(idx, 1);
+    renderAtividades();
+  }
 
   function renderRows() {
     const moBody = document.getElementById('tbodyMO');
@@ -271,7 +342,6 @@
       const btn = document.getElementById('btnAssinarContratada');
       btn.textContent = '✅ Assinado'; btn.disabled = true; btn.className = "bg-green-600 text-white px-8 py-3 rounded-xl font-bold opacity-70";
       document.getElementById('assinadoContratada').textContent = `Assinado eletronicamente em: ${now}`;
-
       const btnF = document.getElementById('btnAssinarFisc');
       btnF.disabled = false; btnF.className = "bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition";
       const txtF = document.getElementById('assinadoFisc');
@@ -284,6 +354,7 @@
   }
 
   renderRows();
+  renderAtividades();
 </script>
 
 </body>
